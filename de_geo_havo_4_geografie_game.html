@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Geo HAVO 4 - Geografie Master Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-gradient {
+            background: linear-gradient(90deg, #2563eb 0%, #3d82f6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+        .correct-bg {
+            background-color: rgba(16, 185, 129, 0.2) !important;
+            border-color: #10b981 !important;
+            color: #34d399 !important;
+        }
+        .wrong-bg {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            color: #f87171 !important;
+        }
+        .selected-card {
+            border-color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center justify-start min-h-screen">
+
+    <!-- Header & Navigation -->
+    <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-500/30">
+                <i class="fa-solid me-1 fa-earth-americas text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Geo Master <span class="text-blue-400">HAVO 4</span></h1>
+                <p class="text-xs text-slate-400">De Geo LRN-line • Hoofdstuk 1 & 2</p>
+            </div>
+        </div>
+
+        <!-- Score & Stats Bar -->
+        <div class="flex items-center gap-4 glass-card px-5 py-2.5 rounded-2xl">
+            <div class="text-center">
+                <span class="block text-xs uppercase text-slate-400 font-semibold">XP Score</span>
+                <span id="score-display" class="text-xl font-bold text-yellow-400">0</span>
+            </div>
+            <div class="h-8 w-px bg-slate-700"></div>
+            <div class="text-center">
+                <span class="block text-xs uppercase text-slate-400 font-semibold">Streak 🔥</span>
+                <span id="streak-display" class="text-xl font-bold text-orange-400">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <div class="w-full max-w-4xl grid grid-cols-3 gap-2 p-1.5 glass-card rounded-2xl mb-8">
+        <button id="tab-quiz" onclick="switchTab('quiz')" class="py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 bg-blue-600 text-white shadow-md">
+            <i class="fa-solid fa-graduation-cap mr-2"></i> Quiz Modus
+        </button>
+        <button id="tab-match" onclick="switchTab('match')" class="py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-puzzle-piece mr-2"></i> Begrippen Match
+        </button>
+        <button id="tab-koppen" onclick="switchTab('koppen')" class="py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-cloud-sun-rain mr-2"></i> Köppen Trainer
+        </button>
+    </div>
+
+    <!-- MAIN GAME CONTAINER -->
+    <main class="w-full max-w-4xl">
+
+        <!-- ==================== TAB 1: QUIZ MODUS ==================== -->
+        <section id="sec-quiz" class="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 rounded-full h-2.5 mb-6 overflow-hidden">
+                <div id="quiz-progress" class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+                <span id="quiz-chapter-tag" class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    Hoofdstuk 1: Arm en Rijk
+                </span>
+                <span id="quiz-counter" class="text-xs font-medium text-slate-400">Vraag 1 van 10</span>
+            </div>
+
+            <!-- Question -->
+            <h2 id="quiz-question" class="text-xl md:text-2xl font-bold mb-6 text-slate-100">
+                Laadt vraag...
+            </h2>
+
+            <!-- Options -->
+            <div id="quiz-options" class="grid grid-cols-1 gap-3 mb-6">
+                <!-- Options injected via JS -->
+            </div>
+
+            <!-- Feedback Panel -->
+            <div id="quiz-feedback" class="hidden p-4 rounded-2xl mb-6 text-sm border">
+                <!-- Feedback injected via JS -->
+            </div>
+
+            <!-- Action Button -->
+            <div class="flex justify-end">
+                <button id="btn-next-question" onclick="nextQuestion()" class="hidden btn-gradient px-6 py-3 rounded-xl font-bold text-white flex items-center gap-2">
+                    Volgende Vraag <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: BEGRIPPEN MATCH ==================== -->
+        <section id="sec-match" class="hidden glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-white mb-1">Begrippen Koppelspel</h2>
+                <p class="text-xs text-slate-400">Klik eerst op een begrip (links/rechts) en daarna op de bijbehorende omschrijving!</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="match-container">
+                <!-- Term/Def cards generated via JS -->
+            </div>
+
+            <div id="match-win" class="hidden text-center py-8">
+                <i class="fa-solid fa-trophy text-5xl text-yellow-400 mb-4 animate-bounce"></i>
+                <h3 class="text-2xl font-bold mb-2">Uitstekend gedaan!</h3>
+                <p class="text-slate-300 text-sm mb-6">Je hebt alle begrippen van Hoofdstuk 1 & 2 correct gekoppeld.</p>
+                <button onclick="initMatchGame()" class="btn-gradient px-6 py-3 rounded-xl font-bold text-white">
+                    Opnieuw Spelen
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: KÖPPEN TRAINER ==================== -->
+        <section id="sec-koppen" class="hidden glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-white mb-1">Köppen Klimaat-Determinator</h2>
+                <p class="text-xs text-slate-400">Gebruik het systeem van Wladimir Köppen (H2) om het juiste klimaat te bepalen op basis van kenmerken.</p>
+            </div>
+
+            <!-- Scenario Card -->
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 mb-6">
+                <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider block mb-1">Klimaat Scenario</span>
+                <p id="koppen-scenario" class="text-lg font-semibold text-slate-100">
+                    Snel laden van scenario...
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" id="koppen-options">
+                <!-- Köppen codes (Af, Cs, BW, Df, ET, etc.) -->
+            </div>
+
+            <div id="koppen-feedback" class="hidden p-4 rounded-2xl mb-6 text-sm border">
+                <!-- Feedback injected JS -->
+            </div>
+
+            <div class="flex justify-end">
+                <button id="btn-next-koppen" onclick="nextKoppenScenario()" class="hidden btn-gradient px-6 py-3 rounded-xl font-bold text-white">
+                    Volgende Scenario <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-xs text-slate-500">
+        <p>Aardrijkskunde Bovenbouw HAVO 4 • De Geo LRN-line (H1 & H2)</p>
+    </footer>
+
+    <!-- GAME LOGIC JAVASCRIPT -->
+    <script>
+        // ================= Global State =================
+        let score = 0;
+        let streak = 0;
+
+        // ================= Quiz Data (H1 & H2) =================
+        const quizData = [
+            {
+                chapter: "Hoofdstuk 1: Arm en Rijk",
+                question: "Welke maateenheid wordt door de VN gebruikt om welzijn te meten, waarin naast inkomen ook onderwijs en levensverwachting zijn opgenomen?",
+                options: [
+                    "BBP per inwoner",
+                    "VN-Welzijnsindex (HDI)",
+                    "Koopkrachtpariteit",
+                    "Demografische Druk"
+                ],
+                correct: 1,
+                explanation: "De VN-Welzijnsindex (Human Development Index / HDI) kijkt niet alleen naar geld (BBP), but juist ook naar de levenskwaliteit via alfabetiseringsgraad, onderwijsduur en levensverwachting."
+            },
+            {
+                chapter: "Hoofdstuk 1: Arm en Rijk",
+                question: "In welk stadium van het demografisch transitiemodel daalt het sterftecijfer snel, terwijl het geboortecijfer hoog blijft?",
+                options: [
+                    "Fase 1 (Agrarische samenleving)",
+                    "Fase 2 (Beginnende uitbreiding)",
+                    "Fase 4 (Lage stationaire fase)",
+                    "Fase 5 (Afname/Vergrijzing)"
+                ],
+                correct: 1,
+                explanation: "In Fase 2 verbetert de gezondheidszorg en hygiëne waardoor het sterftecijfer daalt. Omdat de cultuur/geboortecijfers nog hoog blijven, ontstaat er een snelle natuurlijke bevolkingsgroei."
+            },
+            {
+                chapter: "Hoofdstuk 1: Arm en Rijk",
+                question: "Wat verstaan we onder 'exportvalorisatie' in opkomende economieën (periferie/semi-periferie)?",
+                options: [
+                    "Het importeren van dure eindproducten uit centrumlanden.",
+                    "Het bewerken van grondstoffen voor export zodat ze meer waarde krijgen.",
+                    "Het verlagen van de belasting op buitenlandse investeringen.",
+                    "Het afschaffen van alle invoerrechten binnen een vrijhandelszone."
+                ],
+                correct: 1,
+                explanation: "Exportvalorisatie betekent dat een land grondstoffen (zoals cacao of aardolie) niet ruw exporteert, maar eerst zelf verwerkt (tot chocolade of benzine), waardoor de toegevoegde waarde én winst stijgen."
+            },
+            {
+                chapter: "Hoofdstuk 1: Arm en Rijk",
+                question: "Welk begrip past bij het verschijnsel dat cultuurelementen (zoals kleding, muziek en fastfood) wereldwijd door westerse invloed op elkaar gaan lijken?",
+                options: [
+                    "Regionale identiteit",
+                    "Mondiale diversificatie",
+                    "Homogenisering / Cultuurspreiding",
+                    "Demografische druk"
+                ],
+                correct: 2,
+                explanation: "Door culturele globalisering/mondialisering vindt homogenisering plaats: de verschillen tussen culturen nemen af en wereldwijde patronen lijken steeds meer op elkaar."
+            },
+            {
+                chapter: "Hoofdstuk 2: Klimaat en Landschap",
+                question: "Wat zegt de Wet van Buys Ballot over de afwijking van de wind op het Noordelijk Halfrond?",
+                options: [
+                    "Lucht beweegt van lage naar hoge druk met een afwijking naar links.",
+                    "Lucht beweegt van hoge naar lage druk met een afwijking naar rechts.",
+                    "Lucht beweegt van hoge naar lage druk met een afwijking naar links.",
+                    "Lucht stijgt altijd recht omhoog bij de poolgebieden."
+                ],
+                correct: 1,
+                explanation: "De Wet van Buys Ballot stelt dat wind waait van een Hoog naar een Laag drukgebied. Door de rotatie van de aarde (Corioliseffect) heeft de wind op het Noordelijk Halfrond een afwijking naar RECHTS."
+            },
+            {
+                chapter: "Hoofdstuk 2: Klimaat en Landschap",
+                question: "Wat kenmerkt de ITCZ (Intertropische Convergentiezone) rond de evenaar?",
+                options: [
+                    "Een permanent hogedrukgebied met dalende droge lucht.",
+                    "Een zone van lage druk met veel stijgingsregens en tropische stormen.",
+                    "Een grensgebied waar koude poollucht en warme tropenlucht botsen.",
+                    "Een drooggebied waar passaten juist van elkaar af bewegen."
+                ],
+                correct: 1,
+                explanation: "De ITCZ is de lagedrukzone rond de evenaar veroorzaakt door maximale zonne-instraling. De opstijgende warme lucht koelt af, condenseert en veroorzaakt intense dagelijkse stijgingsregens (zenitale regens)."
+            },
+            {
+                chapter: "Hoofdstuk 2: Klimaat en Landschap",
+                question: "In de Köppen-classificatie staat de tweede letter 's' (zoals bij Cs) voor:",
+                options: [
+                    "Sommertrocken (droge zomer)",
+                    "Sneeuwklimaat met neerslag in alle seizoenen",
+                    "Steppeklimaat",
+                    "Streng winterklimaat"
+                ],
+                correct: 0,
+                explanation: "Bij Köppen geeft de tweede letter het neerslagpatroon aan: f = feucht (altijd nat), s = Sommertrocken (droge zomer), w = Wintertrocken (droge winter)."
+            },
+            {
+                chapter: "Hoofdstuk 2: Klimaat en Landschap",
+                question: "Welke landschapszone wordt gekenmerkt door permafrost, mossen, lage struiken en een extreem kort groeiseizoen?",
+                options: [
+                    "Taiga (Boreal bos)",
+                    "Savanne",
+                    "Toendra",
+                    "Steppe"
+                ],
+                correct: 2,
+                explanation: "De toendra ligt in de E-klimaat zone (E-klimaten: ET). De ondergrond is permanent bevroren (permafrost) waardoor er geen bomen kunnen groeien, enkel mossen en struiken."
+            },
+            {
+                chapter: "Hoofdstuk 2: Klimaat en Landschap",
+                question: "Wat is het verschil tussen chemische en mechanische (fysische) verwering?",
+                options: [
+                    "Chemische verwering vindt alleen plaats in woestijnen, mechanische in de bergen.",
+                    "Bij mechanische verwering verandert de chemische samenstelling van het gesteente, bij chemische niet.",
+                    "Bij mechanische verwering brokkelt gesteente af zonder dat de samenstelling verandert; bij chemische verwering verandert het gesteente wel van samenstelling.",
+                    "Er is geen verschil; het zijn synoniemen voor bodemerosie."
+                ],
+                correct: 2,
+                explanation: "Mechanische verwering (bv. vorstverwering) zet spanning op de steen waardoor deze breekt. Chemische verwering (bv. oplossing door zuur regenwater) verandert de mineralen in de steen."
+            },
+            {
+                chapter: "Hoofdstuk 1 & 2: Synthese",
+                question: "Wat is een belangrijk gevolg van verwoestijning (desertificatie) in het Sahel-gebied?",
+                options: [
+                    "Toename van de biodiversiteit en landbouwopbrengsten.",
+                    "Verlies van vruchtbare bovengrond door erosie, leidend tot gedwongen migratie.",
+                    "Afname van de temperatuur door verhoogde verdamping.",
+                    "Snelle daling van de demografische druk."
+                ],
+                correct: 1,
+                explanation: "Overbegrazing en klimaatverandering tasten de vegetatie aan. De bodem erodeert (uitspoeling/verwaaiing), landbouw wordt onmogelijk, wat leidt tot armoede en milieumigratie."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizAnswered = false;
+
+        // ================= Match Game Data =================
+        const matchTermsData = [
+            { id: 1, term: "Demografische transitie", def: "Overgang van hoge geboorte- en sterftecijfers naar lage cijfers door ontwikkeling." },
+            { id: 2, term: "VN-Welzijnsindex (HDI)", def: "Indicator gebaseerd op koopkracht, alfabetisering en levensverwachting." },
+            { id: 3, term: "Corioliseffect", def: "Afwijking van windstromen door de draaiing van de aarde (rechts op NH)." },
+            { id: 4, term: "ITCZ", def: "Lagedrukgebied rond de evenaar met veel stijgingsregens." },
+            { id: 5, term: "Exportvalorisatie", def: "Grondstoffen verwerken in eigen land om de waarde bij export te verhogen." },
+            { id: 6, term: "Permafrost", def: "Altijd bevroren ondergrond in het toendraklimaat." }
+        ];
+
+        let selectedTerm = null;
+        let selectedDef = null;
+        let matchedPairsCount = 0;
+
+        // ================= Köppen Scenarios =================
+        const koppenScenarios = [
+            {
+                text: "Warm tropisch klimaat. Het is het hele jaar door erg warm (koudste maand > 18°C) en er valt elke maand veel neerslag.",
+                code: "Af",
+                name: "Tropisch regenwoudklimaat",
+                explanation: "A = Tropisch (koudste maand > 18°C), f = feucht (altijd nat)."
+            },
+            {
+                text: "Droog klimaat in een woestijngebied met extreem weinig neerslag het hele jaar door.",
+                code: "BW",
+                name: "Woestijnklimaat",
+                explanation: "B = Droog klimaat, W = Wüste (Woestijn)."
+            },
+            {
+                text: "Gematigd zeeklimaat rond de Middellandse Zee met zachte winters en een erg droge, warme zomer.",
+                code: "Cs",
+                name: "Middellandse Zeeklimaat",
+                explanation: "C = Gematigd klimaat, s = Sommertrocken (droge zomer)."
+            },
+            {
+                text: "Landklimaat met zeer strenge winters (koudste maand < -3°C) en voldoende neerslag in alle seizoenen.",
+                code: "Df",
+                name: "Landklimaat (met natte winters/zomers)",
+                explanation: "D = Landklimaat, f = feucht (geen droge periode)."
+            },
+            {
+                text: "Toendraklimaat waar de warmste maand tussen de 0°C en 10°C blijft. Bomen kunnen hier niet meer groeien.",
+                code: "ET",
+                name: "Toendraklimaat",
+                explanation: "E = Poolklimaat, T = Toendra (warmste maand tussen 0°C en 10°C)."
+            }
+        ];
+
+        let currentKoppenIndex = 0;
+        let koppenAnswered = false;
+
+        // ================= HELPER FUNCTIONS =================
+        function updateScore(points) {
+            score += points;
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function updateStreak(reset = false) {
+            if (reset) {
+                streak = 0;
+            } else {
+                streak++;
+            }
+            document.getElementById('streak-display').innerText = streak;
+        }
+
+        function switchTab(tab) {
+            // Buttons
+            document.getElementById('tab-quiz').className = tab === 'quiz' ? 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 bg-blue-600 text-white shadow-md' : 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 text-slate-400 hover:text-white';
+            document.getElementById('tab-match').className = tab === 'match' ? 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 bg-blue-600 text-white shadow-md' : 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 text-slate-400 hover:text-white';
+            document.getElementById('tab-koppen').className = tab === 'koppen' ? 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 bg-blue-600 text-white shadow-md' : 'py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-200 text-slate-400 hover:text-white';
+
+            // Sections
+            document.getElementById('sec-quiz').classList.toggle('hidden', tab !== 'quiz');
+            document.getElementById('sec-match').classList.toggle('hidden', tab !== 'match');
+            document.getElementById('sec-koppen').classList.toggle('hidden', tab !== 'koppen');
+
+            if (tab === 'match' && matchedPairsCount === 0) {
+                initMatchGame();
+            }
+            if (tab === 'koppen') {
+                loadKoppenScenario();
+            }
+        }
+
+        // ================= QUIZ LOGIC =================
+        function loadQuizQuestion() {
+            quizAnswered = false;
+            const q = quizData[currentQuizIndex];
+
+            // Progress bar
+            const pct = ((currentQuizIndex + 1) / quizData.length) * 100;
+            document.getElementById('quiz-progress').style.width = `${pct}%`;
+
+            document.getElementById('quiz-chapter-tag').innerText = q.chapter;
+            document.getElementById('quiz-counter').innerText = `Vraag ${currentQuizIndex + 1} van ${quizData.length}`;
+            document.getElementById('quiz-question').innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-blue-500 hover:bg-slate-800 transition-all font-medium text-slate-200 flex justify-between items-center';
+                btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle text-slate-500"></i>`;
+                btn.onclick = () => selectQuizAnswer(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').className = 'hidden p-4 rounded-2xl mb-6 text-sm border';
+            document.getElementById('btn-next-question').classList.add('hidden');
+        }
+
+        function selectQuizAnswer(index, btnEl) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const q = quizData[currentQuizIndex];
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.children;
+            const feedbackEl = document.getElementById('quiz-feedback');
+
+            if (index === q.correct) {
+                btnEl.className = 'w-full text-left p-4 rounded-xl correct-bg border font-bold flex justify-between items-center';
+                btnEl.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400';
+                feedbackEl.className = 'p-4 rounded-2xl mb-6 text-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
+                feedbackEl.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-check mr-2"></i> Uitstekend!</p><p>${q.explanation}</p>`;
+                updateScore(100 + (streak * 10));
+                updateStreak(false);
+            } else {
+                btnEl.className = 'w-full text-left p-4 rounded-xl wrong-bg border font-bold flex justify-between items-center';
+                btnEl.querySelector('i').className = 'fa-solid fa-circle-xmark text-red-400';
+
+                // Highlight correct one
+                buttons[q.correct].className = 'w-full text-left p-4 rounded-xl correct-bg border font-bold flex justify-between items-center';
+                buttons[q.correct].querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400';
+
+                feedbackEl.className = 'p-4 rounded-2xl mb-6 text-sm border border-red-500/30 bg-red-500/10 text-red-300';
+                feedbackEl.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-xmark mr-2"></i> Helaas onjuist...</p><p>${q.explanation}</p>`;
+                updateStreak(true);
+            }
+
+            feedbackEl.classList.remove('hidden');
+            document.getElementById('btn-next-question').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex >= quizData.length) {
+                // Quiz completed
+                alert(`Gefeliciteerd! Je hebt de quiz afgerond met een totaalscore van ${score} XP!`);
+                currentQuizIndex = 0;
+            }
+            loadQuizQuestion();
+        }
+
+        // ================= MATCH GAME LOGIC =================
+        function initMatchGame() {
+            matchedPairsCount = 0;
+            selectedTerm = null;
+            selectedDef = null;
+            document.getElementById('match-win').classList.add('hidden');
+
+            const container = document.getElementById('match-container');
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+            // Shuffle terms and defs independently
+            const terms = [...matchTermsData].sort(() => Math.random() - 0.5);
+            const defs = [...matchTermsData].sort(() => Math.random() - 0.5);
+
+            const termsCol = document.createElement('div');
+            termsCol.className = 'space-y-3';
+            termsCol.innerHTML = '<h3 class="text-xs uppercase text-slate-400 font-bold mb-2">Begrip</h3>';
+
+            terms.forEach(item => {
+                const card = document.createElement('div');
+                card.id = `term-${item.id}`;
+                card.className = 'p-4 rounded-xl bg-slate-800 border border-slate-700 cursor-pointer hover:border-blue-500 transition-all text-sm font-semibold text-slate-200';
+                card.innerText = item.term;
+                card.onclick = () => selectTermCard(item.id, card);
+                termsCol.appendChild(card);
+            });
+
+            const defsCol = document.createElement('div');
+            defsCol.className = 'space-y-3';
+            defsCol.innerHTML = '<h3 class="text-xs uppercase text-slate-400 font-bold mb-2">Omschrijving</h3>';
+
+            defs.forEach(item => {
+                const card = document.createElement('div');
+                card.id = `def-${item.id}`;
+                card.className = 'p-4 rounded-xl bg-slate-800 border border-slate-700 cursor-pointer hover:border-blue-500 transition-all text-xs text-slate-300';
+                card.innerText = item.def;
+                card.onclick = () => selectDefCard(item.id, card);
+                defsCol.appendChild(card);
+            });
+
+            container.appendChild(termsCol);
+            container.appendChild(defsCol);
+        }
+
+        function selectTermCard(id, el) {
+            if (el.classList.contains('correct-bg')) return;
+            
+            // Clear previous selection
+            document.querySelectorAll('#match-container [id^="term-"]').forEach(c => c.classList.remove('selected-card'));
+            
+            selectedTerm = { id, el };
+            el.classList.add('selected-card');
+            checkMatch();
+        }
+
+        function selectDefCard(id, el) {
+            if (el.classList.contains('correct-bg')) return;
+
+            // Clear previous selection
+            document.querySelectorAll('#match-container [id^="def-"]').forEach(c => c.classList.remove('selected-card'));
+
+            selectedDef = { id, el };
+            el.classList.add('selected-card');
+            checkMatch();
+        }
+
+        function checkMatch() {
+            if (selectedTerm && selectedDef) {
+                if (selectedTerm.id === selectedDef.id) {
+                    // Match!
+                    selectedTerm.el.className = 'p-4 rounded-xl correct-bg border text-sm font-semibold';
+                    selectedDef.el.className = 'p-4 rounded-xl correct-bg border text-xs';
+                    selectedTerm.el.classList.remove('selected-card');
+                    selectedDef.el.classList.remove('selected-card');
+
+                    selectedTerm = null;
+                    selectedDef = null;
+                    matchedPairsCount++;
+                    updateScore(80);
+
+                    if (matchedPairsCount === matchTermsData.length) {
+                        document.getElementById('match-container').classList.add('hidden');
+                        document.getElementById('match-win').classList.remove('hidden');
+                    }
+                } else {
+                    // Wrong match
+                    const t = selectedTerm.el;
+                    const d = selectedDef.el;
+                    t.classList.add('wrong-bg');
+                    d.classList.add('wrong-bg');
+
+                    setTimeout(() => {
+                        t.classList.remove('wrong-bg', 'selected-card');
+                        d.classList.remove('wrong-bg', 'selected-card');
+                    }, 800);
+
+                    selectedTerm = null;
+                    selectedDef = null;
+                }
+            }
+        }
+
+        // ================= KÖPPEN TRAINER LOGIC =================
+        function loadKoppenScenario() {
+            koppenAnswered = false;
+            const scenario = koppenScenarios[currentKoppenIndex];
+            document.getElementById('koppen-scenario').innerText = scenario.text;
+
+            const optionsContainer = document.getElementById('koppen-options');
+            optionsContainer.innerHTML = '';
+
+            // Unique options including correct one
+            const allCodes = ['Af', 'BW', 'Cs', 'Df', 'ET', 'Aw', 'BS'];
+            allCodes.forEach(code => {
+                const btn = document.createElement('button');
+                btn.className = 'p-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-blue-500 font-bold text-center text-lg text-slate-100 transition-all';
+                btn.innerText = code;
+                btn.onclick = () => selectKoppenAnswer(code, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('koppen-feedback').className = 'hidden p-4 rounded-2xl mb-6 text-sm border';
+            document.getElementById('btn-next-koppen').classList.add('hidden');
+        }
+
+        function selectKoppenAnswer(code, btnEl) {
+            if (koppenAnswered) return;
+            koppenAnswered = true;
+
+            const scenario = koppenScenarios[currentKoppenIndex];
+            const feedbackEl = document.getElementById('koppen-feedback');
+
+            if (code === scenario.code) {
+                btnEl.className = 'p-4 rounded-xl correct-bg border font-bold text-center text-lg';
+                feedbackEl.className = 'p-4 rounded-2xl mb-6 text-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
+                feedbackEl.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-check mr-2"></i> Correct! (${scenario.name})</p><p>${scenario.explanation}</p>`;
+                updateScore(120);
+                updateStreak(false);
+            } else {
+                btnEl.className = 'p-4 rounded-xl wrong-bg border font-bold text-center text-lg';
+                feedbackEl.className = 'p-4 rounded-2xl mb-6 text-sm border border-red-500/30 bg-red-500/10 text-red-300';
+                feedbackEl.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-xmark mr-2"></i> Niet helemaal...</p><p>Het juiste antwoord is <strong>${scenario.code}</strong> (${scenario.name}). <br>${scenario.explanation}</p>`;
+                updateStreak(true);
+            }
+
+            feedbackEl.classList.remove('hidden');
+            document.getElementById('btn-next-koppen').classList.remove('hidden');
+        }
+
+        function nextKoppenScenario() {
+            currentKoppenIndex = (currentKoppenIndex + 1) % koppenScenarios.length;
+            loadKoppenScenario();
+        }
+
+        // Initialize Quiz on load
+        window.onload = () => {
+            loadQuizQuestion();
+        };
+    </script>
+</body>
+</html>
